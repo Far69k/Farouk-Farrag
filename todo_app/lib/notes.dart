@@ -71,8 +71,8 @@ class _NotesState extends State<Notes> {
                             context, notes[index].title, notes[index].content);
                       },
                       child: Card(
-                        elevation: 3,
-                        margin: const EdgeInsets.all(8),
+                        elevation: 4,
+                        margin: const EdgeInsets.all(10),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
