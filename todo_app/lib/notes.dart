@@ -102,11 +102,11 @@ class _NotesState extends State<Notes> {
                             notes.removeAt(index);
                             if (index == 0) {
                               showDeleteHint =
-                                  false; // Hide the hint if the first note is deleted
+                                  false;
                             }
                           });
 
-                          // Save the updated notes list.
+                          
                           _saveNotes();
                         },
                       ),
@@ -131,7 +131,7 @@ class _NotesState extends State<Notes> {
                               notes[index].content = result['content'];
                             });
 
-                            // Save the updated notes list.
+                            
                             _saveNotes();
                           }
                         },
@@ -176,7 +176,7 @@ class _NotesState extends State<Notes> {
                   content: result['content'],
                 ));
 
-                // Save the updated notes list.
+                
                 _saveNotes();
               });
             }
