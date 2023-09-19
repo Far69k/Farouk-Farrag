@@ -66,7 +66,7 @@ class _loginPageState extends State<loginPage> {
       } on FirebaseAuthException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           backgroundColor: Colors.red,
-          content: Text("wrong email or password"),
+          content: Text("$e"),
         ));
       }
     }
