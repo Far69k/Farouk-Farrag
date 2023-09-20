@@ -1,0 +1,93 @@
+const int soilMoisturePin = A0;
+const int tempSensorPin = A1;
+const int photoResistPin = A2;
+
+const int dcPin = 3;
+const int dc2Pin = 4;
+const int dc3Pin = 5;
+const int dc4Pin = 2;
+
+
+const int tempLimit = 30;
+const int lightLimit = 300;
+const int waterLevelLimit = 30;
+
+const unsigned long pumpDuration = 3000;
+const unsigned long timeInterval = 8000;
+const unsigned long pumpDuration2 = 3000;
+const unsigned long timeInterval2 = 8000;
+unsigned long startTime = 0;
+unsigned long startTime2 = 0;
+
+
+void setup() {
+  pinMode(dcPin, OUTPUT);
+  pinMode(dc2Pin, OUTPUT);
+  pinMode(dc3Pin, OUTPUT);
+  digitalWrite(dcPin, LOW);
+  digitalWrite(dc2Pin, LOW);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int light = analogRead(photoResistPin);
+  int currentWaterLevel = analogRead(soilMoisturePin);
+  float voltage = (analogRead(tempSensorPin) * 5.0) / 1024.0;
+  float temp = (voltage - 0.5) * 100.0;
+
+  
+  Serial.print("Water Level: ");
+  Serial.println(currentWaterLevel);
+  Serial.print("temp: ");
+  Serial.println(temp);
+  Serial.print("Light: ");
+  Serial.println(light);
+
+  
+  if (currentWaterLevel < waterLevelLimit) {
+    digitalWrite(dcPin, HIGH); 
+  } else {
+    digitalWrite(dcPin, LOW); 
+  }
+  
+  
+  if (temp < tempLimit){
+    digitalWrite(dc3Pin, HIGH); 
+  } else {
+    digitalWrite(dc3Pin, LOW); 
+  }
+  
+  
+  if (light < lightLimit){
+    digitalWrite(dc3Pin, HIGH); 
+  } else {
+    digitalWrite(dc3Pin, LOW); 
+  }
+
+  unsigned long currentTime = millis();
+
+  
+  if (currentTime - startTime >= timeInterval) {
+    digitalWrite(dc2Pin, HIGH); 
+    startTime = currentTime;
+  }
+
+  
+  if (currentTime - startTime >= pumpDuration) {
+    digitalWrite(dc2Pin, LOW); 
+  }
+  
+  
+  if (currentTime - startTime2 >= timeInterval2) {
+    digitalWrite(dc2Pin, HIGH); 
+    startTime2 = currentTime;
+  }
+
+  
+  if (currentTime - startTime2 >= pumpDuration2) {
+    digitalWrite(dc2Pin, LOW); 
+  }
+
+
+  delay(1000);
+}
