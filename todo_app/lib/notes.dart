@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Notes extends StatefulWidget {
   const Notes({Key? key}) : super(key: key);
@@ -71,8 +72,8 @@ class _NotesState extends State<Notes> {
                             context, notes[index].title, notes[index].content);
                       },
                       child: Card(
-                        elevation: 4,
-                        margin: const EdgeInsets.all(10),
+                        elevation: 3,
+                        margin: const EdgeInsets.all(8),
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Column(
@@ -101,12 +102,10 @@ class _NotesState extends State<Notes> {
                           setState(() {
                             notes.removeAt(index);
                             if (index == 0) {
-                              showDeleteHint =
-                                  false;
+                              showDeleteHint = false;
                             }
                           });
 
-                          
                           _saveNotes();
                         },
                       ),
@@ -131,7 +130,6 @@ class _NotesState extends State<Notes> {
                               notes[index].content = result['content'];
                             });
 
-                            
                             _saveNotes();
                           }
                         },
@@ -176,7 +174,6 @@ class _NotesState extends State<Notes> {
                   content: result['content'],
                 ));
 
-                
                 _saveNotes();
               });
             }
@@ -249,13 +246,17 @@ class _AddNotePageState extends State<AddNotePage> {
         backgroundColor: Colors.white,
         actions: [
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               final newNote = Note(
                 title: titleController.text,
                 content: contentController.text,
               );
               Navigator.pop(context,
                   {'title': newNote.title, 'content': newNote.content});
+              await FirebaseFirestore.instance.collection('notes').add({
+                'noteName': newNote.title,
+                'content': newNote.content,
+              });
             },
             child: const Text(
               "Save",
