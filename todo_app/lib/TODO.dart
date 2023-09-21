@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'user_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Todo extends StatefulWidget {
   const Todo({Key? key}) : super(key: key);
@@ -27,6 +29,15 @@ class _TodoState extends State<Todo> {
               color: Color.fromARGB(255, 108, 21, 129),
             ),
           ),
+          IconButton(
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+            },
+            icon: Icon(
+              Icons.logout,
+              color: Color.fromARGB(255, 108, 21, 129),
+            ),
+          )
         ],
         elevation: 0,
         backgroundColor: Colors.white,
@@ -61,11 +72,17 @@ class _TodoState extends State<Todo> {
                   ),
                   onDismissed: (direction) {
                     if (direction == DismissDirection.endToStart) {
-                      setState(() {
+                      setState(() async {
                         todoList.removeTodoItem(index);
-                        if (index == 0 && todoList.items.isEmpty) {
-                          showDeleteHint = false;
-                        }
+                        QuerySnapshot querySnapshot = await FirebaseFirestore
+                            .instance
+                            .collection('tasks')
+                            .where('taskName', isEqualTo: todoItem.title)
+                            .get();
+
+                        querySnapshot.docs.forEach((doc) {
+                          doc.reference.delete();
+                        });
                       });
                     }
                   },
@@ -146,23 +163,28 @@ class _TodoState extends State<Todo> {
                 controller: titleController,
                 cursorColor: Color.fromARGB(255, 108, 21, 129),
                 decoration: InputDecoration(
-                    hintText: "Enter your task",
-                    focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                            color: Color.fromARGB(255, 108, 21, 129)))),
+                  hintText: "Enter your task",
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide:
+                        BorderSide(color: Color.fromARGB(255, 108, 21, 129)),
+                  ),
+                ),
               ),
               TextField(
                 cursorColor: Color.fromARGB(255, 108, 21, 129),
                 controller: detailsController,
                 decoration: InputDecoration(
-                    hintText: "Add details (optional)",
-                    focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                            color: Color.fromARGB(255, 108, 21, 129)))),
+                  hintText: "Add details (optional)",
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide:
+                        BorderSide(color: Color.fromARGB(255, 108, 21, 129)),
+                  ),
+                ),
               ),
               TextButton(
                 style: TextButton.styleFrom(
-                    foregroundColor: Color.fromARGB(255, 108, 21, 129)),
+                  foregroundColor: Color.fromARGB(255, 108, 21, 129),
+                ),
                 onPressed: () async {
                   final DateTime? picked = await showDatePicker(
                     context: context,
@@ -187,15 +209,16 @@ class _TodoState extends State<Todo> {
           actions: [
             Container(
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Color.fromRGBO(55, 1, 87, 0.2)),
+                borderRadius: BorderRadius.circular(10),
+                color: Color.fromRGBO(55, 1, 87, 0.2),
+              ),
               height: 39,
               child: IconButton(
                 icon: Icon(
                   Icons.check,
                   color: Color.fromARGB(255, 108, 21, 129),
                 ),
-                onPressed: () {
+                onPressed: () async {
                   if (titleController.text.isEmpty || selectedDate == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -212,6 +235,12 @@ class _TodoState extends State<Todo> {
                     );
 
                     todoList.addTodoItem(newTodo);
+
+                    await FirebaseFirestore.instance.collection('tasks').add({
+                      'taskName': newTodo.title,
+                      'details': newTodo.details,
+                      'deadline': newTodo.deadline,
+                    });
 
                     Navigator.of(context).pop();
                   }
